@@ -1,6 +1,6 @@
 # scrapbook
 Scrapbook
 
-`npm i -g web-ext`
-`web-ext run`
+- `npm i -g web-ext`
+- `web-ext run`
 
