@@ -1,5 +1,5 @@
 
-const getAbsoluteUrl = (function() {
+let getAbsoluteUrl = (function() {
 	let a;
 
 	return function(url) {
@@ -20,6 +20,9 @@ function *generateSerializedDOMParts(node, indentLevel=0) {
     for (let space of indent(indentLevel)) {
         yield space;
     }
+    if (node === null) {
+        return;
+    }
     if (node.tagName === undefined) {
         yield node.textContent + '\n';
         return;
@@ -27,13 +30,14 @@ function *generateSerializedDOMParts(node, indentLevel=0) {
     yield `<${node.tagName}`;
     if (node.hasAttributes()) {
         for (let attr of node.attributes) {
-            if (attr.name !== 'style') {
-                let value = attr.value;
-                if (attr.name === 'src') {
-                    value = getAbsoluteUrl(value);
-                }
-                yield ` ${attr.name}="${value}"`;
+            if (attr.name === 'style' || attr.name.indexOf('on') === 0) {
+                continue;
             }
+            let value = attr.value;
+            if (attr.name === 'src') {
+                value = getAbsoluteUrl(value);
+            }
+            yield ` ${attr.name}="${value}"`;
         }
     }
     yield ' style="';
@@ -63,12 +67,16 @@ function serializeDOM(node) {
 }
 
 function click(event) {
-    console.log('content.js click');
+    event.preventDefault();
     const x = event.pageX + window.scrollX - window.pageXOffset;
     const y = event.pageY + window.scrollY - window.pageYOffset
     const el = document.elementFromPoint(x, y);
-    console.log(serializeDOM(el));
+    const serialized = serializeDOM(el);
+    //console.log(serialized);
     document.removeEventListener("click", click, false);
+    browser.runtime.sendMessage({"addScrap": serialized});
 }
 
 document.addEventListener("click", click, false);
+
+
