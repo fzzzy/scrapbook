@@ -1,5 +1,4 @@
-console.log('background.js');
-browser.browserAction.onClicked.addListener(handleClick);
-function handleClick() {
+browser.browserAction.onClicked.addListener(() => {
+  browser.tabs.executeScript({file: "content.js"});
   console.log('HANDLECLICK');
-}
+});

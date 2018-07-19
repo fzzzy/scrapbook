@@ -14,7 +14,8 @@
 
   "browser_action": {
     "default_icon": "icons/scrapbook-32.png",
-    "default_title": "Scrapbook"
+    "default_title": "Scrapbook",
+    "browser_style": true
   },
 
   "background": {
