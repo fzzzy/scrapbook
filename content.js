@@ -1,5 +1,27 @@
 
 (function (){
+
+function dom(tagName, attributes, children=[]) {
+    const node = document.createElement(tagName);
+    for (let name in attributes) {
+        if (name.indexOf('on') === 0) {
+        node[name] = attributes[name];
+        } else {
+        node.setAttribute(name, attributes[name]);
+        }
+    }
+    if (!(children instanceof Array)) {
+        children = [children];
+    }
+    for (let child of children) {
+        if (typeof child === 'string') {
+        child = document.createTextNode(child);
+        }
+        node.appendChild(child);
+    }
+    return node;
+}
+    
 let getAbsoluteUrl = (function() {
 	let a;
 
@@ -81,13 +103,11 @@ function mousemove(event) {
     overlay.remove();
     let el = document.elementFromPoint(x, y);
     document.body.appendChild(overlay);
-    if (node) { document.body.appendChild(node); }
-    if (!node) {
-        node = document.createElement('div');
-        node.id = 'highlight-box';
-        node.style.position = 'fixed';
-        node.style.border = '1px dashed black';
-        node.style.borderImage = `url('${browser.extension.getURL("icons/selection.gif")}') 1 1 1 1 repeat repeat`;
+    if (node) {
+        document.body.appendChild(node);
+    } else {
+        const highlightStyle = `position: fixed; border: 1px dashed black; border-image: url('${browser.extension.getURL("icons/selection.gif")}') 1 1 1 1 repeat repeat`;
+        node = dom('div', {id: 'highlight-box', style: highlightStyle});
         document.body.appendChild(node);
     }
     const bounds = el.getBoundingClientRect();
@@ -107,7 +127,7 @@ function click(event) {
     const el = document.elementFromPoint(x, y);
     const serialized = serializeDOM(el);
     //console.log(serialized);
-    browser.runtime.sendMessage({"addScrap": serialized});
+    browser.runtime.sendMessage({"addScrap": serialized, "fromURL": window.location.toString(), timestamp: Date.now()});
     document.removeEventListener("click", click, false);
     document.removeEventListener("mousemove", mousemove, false);
     window.removeEventListener("scroll", scroll, false);
@@ -115,13 +135,8 @@ function click(event) {
 
 let overlay = document.getElementById('scrapbook-highlight-overlay');
 if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.style.postion = 'fixed';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.bottom = '0';
-    overlay.style.right = '0';
-    overlay.style.backgroundColor = 'rgba(1,1,1,0.5)';
+    overlay = dom('div', {style: 'position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(1,1,1,0.5); text-align: center; color: black'},
+        dom('span', {style: 'background-color: #efefef'}, "Click an element to clip"))
     document.body.appendChild(overlay);
     document.addEventListener("click", click, false);
     document.addEventListener("mousemove", mousemove, false);
