@@ -26,7 +26,7 @@ browser.runtime.onMessage.addListener((msg) => {
     const borderStyle = 'border: 1px solid black; padding: 0.25em; margin: 0.25em';
     const frameStyle = 'margin-top: 0.25em; margin-bottom: 1em; width: 100%';
     const node = dom('div', {}, [
-      dom('a', {style: borderStyle, onclick: () => node.remove()}, 'X'),
+      dom('a', {style: borderStyle + '; cursor: pointer', onclick: () => node.remove()}, 'X'),
       dom('span', {style: borderStyle}, `${new Date(msg.timestamp).toLocaleString()} `),
       dom('a', {href: msg.fromURL}, msg.fromURL),
       dom('iframe', {src: dataurl, 'style': frameStyle})
