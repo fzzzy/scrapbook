@@ -89,32 +89,30 @@ function serializeDOM(node) {
     return Array.from(generateSerializedDOMParts(node)).join('');
 }
 
+let highlightBox = document.getElementById('highlightBox')
+
 function scroll(event) {
-    if (overlay) overlay.remove();
-    let highlight = document.getElementById('highlight-box');
-    if (highlight) highlight.remove();
+    if (overlay) { overlay.remove(); }
+    if (highlightBox) { highlightBox.remove(); }
 }
 
 function mousemove(event) {
     const x = event.clientX;
     const y = event.clientY;
-    let node = document.getElementById('highlight-box');
-    if (node) node.remove();
+    if (highlightBox) { highlightBox.remove(); }
     overlay.remove();
     let el = document.elementFromPoint(x, y);
     document.body.appendChild(overlay);
-    if (node) {
-        document.body.appendChild(node);
-    } else {
-        const highlightStyle = `position: fixed; border: 1px dashed black; border-image: url('${browser.extension.getURL("icons/selection.gif")}') 1 1 1 1 repeat repeat`;
-        node = dom('div', {id: 'highlight-box', style: highlightStyle});
-        document.body.appendChild(node);
+    if (!highlightBox) {
+        const highlightStyle = `z-index: 99999999; position: fixed; border: 1px dashed black; border-image: url('${browser.extension.getURL("icons/selection.gif")}') 1 1 1 1 repeat repeat`;
+        highlightBox = dom('div', {id: 'highlight-box', style: highlightStyle});
     }
+    document.body.appendChild(highlightBox);
     const bounds = el.getBoundingClientRect();
-    node.style.top = bounds.top;
-    node.style.left = bounds.left;
-    node.style.height = bounds.height;
-    node.style.width = bounds.width;
+    highlightBox.style.top = bounds.top;
+    highlightBox.style.left = bounds.left;
+    highlightBox.style.height = bounds.height;
+    highlightBox.style.width = bounds.width;
 }
 
 function click(event) {
@@ -126,16 +124,24 @@ function click(event) {
     const y = event.clientY;
     const el = document.elementFromPoint(x, y);
     const serialized = serializeDOM(el);
+    let b64;
+    try {
+        b64 = btoa(serialized);
+    } catch (e) {
+        console.error(e, serialized);
+    }
     //console.log(serialized);
-    browser.runtime.sendMessage({"addScrap": serialized, "fromURL": window.location.toString(), timestamp: Date.now()});
+    browser.runtime.sendMessage({"addClip": b64, "fromURL": window.location.toString(), timestamp: Date.now()});
     document.removeEventListener("click", click, false);
     document.removeEventListener("mousemove", mousemove, false);
     window.removeEventListener("scroll", scroll, false);
 }
 
 let overlay = document.getElementById('scrapbook-highlight-overlay');
+
 if (!overlay) {
-    overlay = dom('div', {style: 'position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(1,1,1,0.5); text-align: center; color: black'},
+    const overlayStyle = 'position: fixed; top: 0; left: 0; bottom: 0; right: 0; background-color: rgba(1,1,1,0.5); text-align: center; color: black; z-index: 99999998';
+    overlay = dom('div', {style: overlayStyle},
         dom('span', {style: 'background-color: #efefef'}, "Click an element to clip"))
     document.body.appendChild(overlay);
     document.addEventListener("click", click, false);

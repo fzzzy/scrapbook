@@ -21,8 +21,8 @@ function dom(tagName, attributes, children=[]) {
 }
 
 browser.runtime.onMessage.addListener((msg) => {
-  if (msg.addScrap !== undefined) {
-    const dataurl = `data:text/html;base64,${btoa(msg.addScrap)}`;
+  if (msg.addClip !== undefined) {
+    const dataurl = `data:text/html;base64,${msg.addClip}`;
     const borderStyle = 'border: 1px solid black; padding: 0.25em; margin: 0.25em';
     const frameStyle = 'margin-top: 0.25em; margin-bottom: 1em; width: 100%';
     const node = dom('div', {}, [
@@ -34,3 +34,4 @@ browser.runtime.onMessage.addListener((msg) => {
     document.body.appendChild(node);
   }
 });
+
